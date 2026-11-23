@@ -16,7 +16,6 @@ export default function Home() {
     setLoading(true);
     setError('');
     try {
-      // Kirim cookie ke backend
       const res = await axios.post('/api/stats', { cookie });
       setData(res.data);
     } catch (err) {
@@ -28,7 +27,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-darkBg text-white p-6 font-sans">
-      {/* Header & Input Cookie */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-gray-800 pb-4 gap-4">
         <h1 className="text-2xl font-bold text-robloxYellow">My Stats Dashboard</h1>
         
@@ -53,7 +51,6 @@ export default function Home() {
 
       {data ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Kiri: Profil & Saldo */}
           <div className="lg:col-span-1 space-y-4">
             <div className="bg-cardBg p-6 rounded-xl border border-gray-800 flex items-center gap-4">
               <img src={data.avatarUrl} alt="Avatar" className="w-20 h-20 rounded-lg bg-gray-800" />
@@ -74,7 +71,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Kanan: Games & Avatar Grid */}
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-cardBg p-4 rounded-xl border border-gray-800">
               <h3 className="text-lg font-bold mb-4 border-l-4 border-robloxYellow pl-3">Top Games Played</h3>
