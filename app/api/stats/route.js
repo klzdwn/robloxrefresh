@@ -12,35 +12,32 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Cookie tidak boleh kosong!' }, { status: 400 });
     }
 
-    // Bersihkan cookie
     const cleanCookie = cookie.replace('_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_', '').trim();
-
-    // GANTI URL LANGSUNG KE PROXY
-    // Gunakan proxy publik yang khusus untuk Roblox API
-    const PROXY_URL = 'https://roblox-proxy.vercel.app'; 
 
     const headers = { 
       'Cookie': `.ROBLOSECURITY=${cleanCookie}`,
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/json',
+      'Referer': 'https://www.roblox.com/',
+      'Origin': 'https://www.roblox.com'
     };
     
-    // 1. Ambil Info User via Proxy
-    const userRes = await axios.get(`${PROXY_URL}/users/v1/users/authenticated`, { headers });
+    // 1. Ambil Info User
+    const userRes = await axios.get('https://users.roblox.com/v1/users/authenticated', { headers });
     const userId = userRes.data.id;
     
-    // 2. Ambil Saldo Robux via Proxy
-    const econRes = await axios.get(`${PROXY_URL}/economy/v1/users/${userId}/currency`, { headers });
+    // 2. Ambil Saldo Robux
+    const econRes = await axios.get(`https://economy.roblox.com/v1/users/${userId}/currency`, { headers });
 
-    // 3. Ambil Avatar Thumbnail (Ini biasanya aman, tapi kita proxy juga buat jaga-jaga)
-    const thumbRes = await axios.get(`${PROXY_URL}/thumbnails/v1/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
+    // 3. Ambil Avatar Thumbnail
+    const thumbRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
     
-    // 4. Ambil Game via Proxy
-    const gamesRes = await axios.get(`${PROXY_URL}/games/v2/users/${userId}/games?limit=10&sortOrder=Desc`);
+    // 4. Ambil Game
+    const gamesRes = await axios.get(`https://games.roblox.com/v2/users/${userId}/games?limit=10&sortOrder=Desc`);
     
-    // 5. Ambil Item Inventory via Proxy
-    const itemsRes = await axios.get(`${PROXY_URL}/inventory/v1/users/${userId}/assets/collectibles?limit=20&sortOrder=Desc`, { headers });
+    // 5. Ambil Item Inventory
+    const itemsRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?limit=20&sortOrder=Desc`, { headers });
     
-    // Format Data (sama seperti sebelumnya)
     const games = gamesRes.data.data.map(g => ({
       id: g.id,
       name: g.name,
@@ -67,8 +64,9 @@ export async function POST(req) {
 
   } catch (error) {
     console.error("API Error Detail:", error.response?.data || error.message);
+    // Kalo error, kita kirim pesan error aslinya ke frontend biar ketahuan
     return NextResponse.json({ 
-      error: 'Gagal terhubung ke Roblox via proxy.',
+      error: 'Gagal terhubung ke Roblox.',
       detail: error.message
     }, { status: 500 });
   }
