@@ -1,35 +1,35 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 
-export const dynamic = 'force-dynamic'; // Wajib biar gak di-cache Vercel
-
-export async function GET() {
-  const cookie = process.env.ROBLOX_COOKIE;
-  
-  if (!cookie) {
-    return NextResponse.json({ error: 'Cookie belum di-set di Environment Variables' }, { status: 500 });
-  }
-
+export async function POST(req) {
   try {
+    // 1. Ambil cookie yang dikirim dari halaman web
+    const body = await req.json();
+    const cookie = body.cookie;
+
+    if (!cookie) {
+      return NextResponse.json({ error: 'Cookie tidak boleh kosong!' }, { status: 400 });
+    }
+
     const headers = { 
       'Cookie': `.ROBLOSECURITY=${cookie}`,
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     };
     
-    // 1. Ambil Info User
+    // 2. Ambil Info User berdasarkan cookie
     const userRes = await axios.get('https://users.roblox.com/v1/users/authenticated', { headers });
     const userId = userRes.data.id;
     
-    // 2. Ambil Saldo Robux
+    // 3. Ambil Saldo Robux
     const econRes = await axios.get(`https://economy.roblox.com/v1/users/${userId}/currency`, { headers });
 
-    // 3. Ambil Avatar Thumbnail
+    // 4. Ambil Avatar Thumbnail
     const thumbRes = await axios.get(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=420x420&format=Png&isCircular=false`);
     
-    // 4. Ambil Game
+    // 5. Ambil Game
     const gamesRes = await axios.get(`https://games.roblox.com/v2/users/${userId}/games?limit=10&sortOrder=Desc`);
     
-    // 5. Ambil Item Inventory
+    // 6. Ambil Item Inventory
     const itemsRes = await axios.get(`https://inventory.roblox.com/v1/users/${userId}/assets/collectibles?limit=20&sortOrder=Desc`, { headers });
     
     // Format Data
@@ -58,7 +58,7 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error("API Error:", error.response?.data || error.message);
-    return NextResponse.json({ error: 'Gagal konek ke Roblox. Cek Cookie atau IP Vercel diblokir.' }, { status: 500 });
+    console.error("API Error:", error.message);
+    return NextResponse.json({ error: 'Cookie tidak valid atau sudah expired.' }, { status: 401 });
   }
 }
