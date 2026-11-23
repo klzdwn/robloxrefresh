@@ -12,6 +12,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Cookie tidak boleh kosong!' }, { status: 400 });
     }
 
+    // Bersihkan cookie dari teks warning jika user tidak sengaja menyalinnya
     const cleanCookie = cookie.replace('_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_', '').trim();
 
     const headers = { 
@@ -64,7 +65,6 @@ export async function POST(req) {
 
   } catch (error) {
     console.error("API Error Detail:", error.response?.data || error.message);
-    // Kalo error, kita kirim pesan error aslinya ke frontend biar ketahuan
     return NextResponse.json({ 
       error: 'Gagal terhubung ke Roblox.',
       detail: error.message
