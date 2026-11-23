@@ -3,33 +3,50 @@ import { useState } from 'react';
 import axios from 'axios';
 
 export default function Home() {
+  const [cookie, setCookie] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleFetch = async () => {
+    if (!cookie) {
+      setError('Masukkan cookie dulu bos!');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
-      const res = await axios.get('/api/stats');
+      // Kirim cookie ke backend
+      const res = await axios.post('/api/stats', { cookie });
       setData(res.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Terjadi kesalahan sistem.');
+      setError(err.response?.data?.error || 'Cookie salah atau expired.');
+      setData(null);
     }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-darkBg text-white p-6 font-sans">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+      {/* Header & Input Cookie */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-gray-800 pb-4 gap-4">
         <h1 className="text-2xl font-bold text-robloxYellow">My Stats Dashboard</h1>
-        <button 
-          onClick={handleFetch} 
-          className="bg-robloxYellow text-black px-6 py-2 rounded font-bold hover:bg-yellow-500 transition"
-        >
-          {loading ? 'Memuat Data...' : 'Load Data Akun'}
-        </button>
+        
+        <div className="flex w-full md:w-auto gap-2">
+          <input 
+            type="password" 
+            placeholder="Masukkan Cookie .ROBLOSECURITY" 
+            className="bg-cardBg border border-gray-700 rounded px-4 py-2 text-sm w-full md:w-64 focus:outline-none focus:border-robloxYellow"
+            value={cookie}
+            onChange={(e) => setCookie(e.target.value)}
+          />
+          <button 
+            onClick={handleFetch} 
+            className="bg-robloxYellow text-black px-6 py-2 rounded font-bold hover:bg-yellow-500 transition whitespace-nowrap"
+          >
+            {loading ? '...' : 'Connect'}
+          </button>
+        </div>
       </div>
 
       {error && <div className="bg-red-900/50 text-red-200 p-3 rounded-lg mb-4 border border-red-800">{error}</div>}
@@ -91,7 +108,7 @@ export default function Home() {
         </div>
       ) : (
         <div className="text-center mt-20 text-gray-500">
-          <p>Klik "Load Data Akun" untuk melihat statistik.</p>
+          <p>Masukkan Cookie di atas, lalu klik Connect.</p>
         </div>
       )}
     </div>
